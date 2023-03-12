@@ -1,5 +1,11 @@
+use crate::race::Race;
+
+#[allow(dead_code)]
+#[derive(Clone, Builder, Debug)]
+#[builder(build_fn(skip))]
 pub struct Hero {
     name: String,
+    race: Race,
     abilities: Abilities,
 }
 
@@ -67,6 +73,21 @@ impl Abilities {
     }
 }
 
+impl std::ops::Add<&Race> for Abilities {
+    type Output = Abilities;
+
+    fn add(self, rhs: &Race) -> Self::Output {
+        Abilities {
+            strength: self.strength + rhs.strength_bonus,
+            dexterity: self.dexterity + rhs.dexterity_bonus,
+            constitution: self.constitution + rhs.constitution_bonus,
+            intelligence: self.intelligence + rhs.intelligence_bonus,
+            wisdom: self.wisdom + rhs.wisdom_bonus,
+            charisma: self.charisma + rhs.charisma_bonus,
+        }
+    }
+}
+
 #[test]
 fn test_mod_negative() {
     let params = vec![
@@ -125,5 +146,24 @@ fn test_mod(params: &[(AbilityPoints, i8)]) {
             "wrong mod for {}",
             a_points
         );
+    }
+}
+
+impl HeroBuilder {
+    pub fn build(self) -> Result<Hero, HeroBuilderError> {
+        let abilities = self
+            .abilities
+            .ok_or(HeroBuilderError::UninitializedField("abilities"))?;
+        let race = self
+            .race
+            .ok_or(HeroBuilderError::UninitializedField("race"))?;
+
+        Ok(Hero {
+            name: self
+                .name
+                .ok_or(HeroBuilderError::UninitializedField("name"))?,
+            abilities: abilities + &race,
+            race: race,
+        })
     }
 }
