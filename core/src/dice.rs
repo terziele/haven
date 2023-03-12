@@ -1,6 +1,9 @@
 use rand::Rng;
 
+#[allow(dead_code)]
 const D6: Dice = Dice(6);
+#[allow(dead_code)]
+const D20: Dice = Dice(20);
 
 pub struct Dice(u8);
 
